@@ -1,12 +1,12 @@
 ---
-title: Hello world replay!
-date: 2024/06/01
+title: Hello world!
+date: 2023/03/19
 category: blog
 tags: blog, blogging, hello world, welcome, introduction
 active: 2
 ---
 
-# Hello world (replay)!
+# Hello world!
 
 > Here's just a quote block example
 
