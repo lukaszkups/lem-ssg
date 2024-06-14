@@ -1,0 +1,27 @@
+{
+  "name": "lem",
+  "version": "1.0.0",
+  "description": " A static site generator made with KISS principle and FE dev friendliness in mind. ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/89bitstudio/lem.git"
+  },
+  "keywords": [
+    "static",
+    "site",
+    "generator",
+    "static",
+    "site",
+    "javascript"
+  ],
+  "author": "lukaszkups",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/89bitstudio/lem/issues"
+  },
+  "homepage": "https://github.com/89bitstudio/lem#readme"
+}
