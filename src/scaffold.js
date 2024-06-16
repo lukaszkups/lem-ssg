@@ -1,24 +1,15 @@
-import fs from 'fs';
+// import fs from 'fs';
+const fs = require('fs');
+const path = require('path');
 
 // Generate folder structure
-export const generateProjectScaffold = () => {
-  fs.mkdirSync('./content')
-  fs.mkdirSync('./content/pages')
-  fs.mkdirSync('./content/pages/blog')
-  fs.mkdirSync(`./content/pages/blog/${new Date().getFullYear()}`)
-  fs.mkdirSync('./content/pages/projects')
-  fs.mkdirSync('./content/static')
-  fs.mkdirSync('./content/static')
-  fs.mkdirSync('./output')
-  fs.mkdirSync('./theme')
-  fs.mkdirSync('./theme/assets')
-  fs.mkdirSync('./theme/assets/css')
-  fs.mkdirSync('./theme/assets/fonts')
-  fs.mkdirSync('./theme/assets/images')
-  fs.mkdirSync('./theme/assets/js')
-  fs.mkdirSync('./theme/templates')
+module.exports.generateProjectScaffold = (url) => {
+  console.log('Generating LEM project structure...');
+  let finalPath = url || './';
+  fs.cpSync(path.join(__dirname, 'scaffold/'), finalPath, { recursive: true });
+  console.log(`Project created at ${finalPath} !`);
 }
 
-export const generateExampleFiles = () => {
+module.exports.generateExampleFiles = () => {
   
 }
