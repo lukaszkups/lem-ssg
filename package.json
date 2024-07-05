@@ -1,32 +1,25 @@
 {
   "name": "lem",
-  "version": "1.0.0",
-  "description": " A static site generator made with KISS principle and FE dev friendliness in mind. ",
-  "main": "bin/index.js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
-  "bin": {
-    "lem": "./bin/index.js"
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/showdown": "^2.0.6",
+    "@types/uglify-js": "^3.17.5",
+    "@types/uglifycss": "^0.0.11",
+    "typescript": "^5.2.2",
+    "vite": "^5.3.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/89bitstudio/lem.git"
-  },
-  "keywords": [
-    "static",
-    "site",
-    "generator",
-    "static",
-    "site",
-    "javascript"
-  ],
-  "author": "lukaszkups",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/89bitstudio/lem/issues"
-  },
-  "homepage": "https://github.com/89bitstudio/lem#readme",
   "dependencies": {
+    "front-matter": "^4.0.2",
+    "showdown": "^2.1.0",
+    "uglify-js": "^3.18.0",
+    "uglifycss": "^0.0.29"
   }
 }
