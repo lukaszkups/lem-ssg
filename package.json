@@ -1,6 +1,5 @@
 {
-  "name": "lem",
-  "private": true,
+  "name": "lem-ssg",
   "version": "0.0.1",
   "type": "module",
   "scripts": {
