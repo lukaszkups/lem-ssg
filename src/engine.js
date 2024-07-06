@@ -1,47 +1,31 @@
 import fs from 'fs';
 import path from 'path';
-import showdown, { Converter } from 'showdown';
+import watch from 'node-watch';
+import showdown from 'showdown';
 import fm from 'front-matter';
 import UglifyJS from 'uglify-js';
 import uglifycss from 'uglifycss';
-import {
-  CompiledRouteContent, 
-  ContentObjListRoute, 
-  EngineArgs, 
-  FrontMatterContentAttributes, 
-  JsonArr, 
-  JsonContent, 
-  NestedRoute, 
-  Route, 
-  RouteContent, 
-  RouteContentMeta, 
-  RouteType 
-} from './types.js';
 
 export default class Engine {
-  routes: (Route | NestedRoute)[]
-  markdown: Converter
-  path: string
-
-  constructor(args: EngineArgs) {
+  constructor(args) {
     this.routes = args?.routes || [];
     this.markdown = new showdown.Converter({ metadata: true });
     this.markdown.setFlavor('github');
-    // get current project
+    // get current project path
     this.path = process.cwd();
   }
 
-  addRoute(route: Route | NestedRoute) {
+  addRoute(route) {
     this.routes.push(route);
   }
 
-  addRoutes(routeArr: (Route | NestedRoute)[]) {
+  addRoutes(routeArr) {
     routeArr.forEach(route => {
       this.routes.push(route);
     });
   }
 
-  removeRoute(routeId: string) {
+  removeRoute(routeId) {
     const index = this.routes.findIndex((route) => route.id === routeId);
     if (index > -1) {
       // @ts-ignore-next-line
@@ -66,14 +50,14 @@ export default class Engine {
     this.copyContentStaticDir();
   }
 
-  compileDynamicRoute(route: Route | NestedRoute) {
+  compileDynamicRoute(route) {
     const routePath = path.join(this.path, route.source)
     // collect markdown files within directory
     const sourceFilePaths = this.getAllFilesWithinDirectory(routePath);
     // create destination list directory (will contain folders 1 per list item with index.html file inside)
     this.ensureDirExists(path.join(this.path, route.destination));
     // loop over source files and save them in destination directory
-    sourceFilePaths.forEach((sourceFilePath: string) => {
+    sourceFilePaths.forEach((sourceFilePath) => {
       // read single file
       const txtContent = fs.readFileSync(path.join(routePath, sourceFilePath), 'utf8');
       // extract markdown and parse it into HTML
@@ -85,9 +69,9 @@ export default class Engine {
         meta.title = this.stripFromQuotes(meta.title);
       }
       // create reusable object that we send to render functions
-      const contentObj: CompiledRouteContent = {
+      const contentObj = {
         meta: meta,
-        slug: meta?.slug || this.slugify(meta.title || String(Date.now()),
+        slug: meta?.slug || this.slugify(meta.title || String(Date.now())),
         content: htmlContent
       }
       // Add route-based content to the object
@@ -105,8 +89,8 @@ export default class Engine {
     });
   }
 
-  compileListRoute(route: Route | NestedRoute) {
-    const contentObj: ContentObjListRoute = {
+  compileListRoute(route) {
+    const contentObj = {
       items: [],
     }
     const routePath = path.join(this.path, route.source);
@@ -115,11 +99,11 @@ export default class Engine {
     // create destination list directory (will contain folders 1 per list item with index.html file inside)
     this.ensureDirExists(route.destination);
     // loop over source files
-    sourceFilePaths.forEach((sourceFilePath: string) => {
+    sourceFilePaths.forEach((sourceFilePath) => {
       // read single file
       const txtContent = fs.readFileSync(path.join(routePath, sourceFilePath), 'utf8');
       // extract metadata from the current file
-      const meta = fm(txtContent)?.attributes as FrontMatterContentAttributes;
+      const meta = fm(txtContent)?.attributes;
       // Remove extra quotation characters from title
       if (meta?.title) {
         meta.title = this.stripFromQuotes(meta.title);
@@ -129,7 +113,7 @@ export default class Engine {
       const contentItemObj = {
         meta: meta || { title: Date.now() },
         slug: slug,
-        url: `${(route as NestedRoute).listItemUrl}${slug}/`
+        url: `${route.listItemUrl}${slug}/`
       }
       
       // add list item to collection
@@ -142,7 +126,7 @@ export default class Engine {
     // create destination route folder
     this.ensureDirExists(outputFilePath);
     // save json file for search purposes
-    if ((route as NestedRoute).createSearchIndex) {
+    if (route.createSearchIndex) {
       fs.writeFileSync(path.join(outputFilePath, 'search.json'), JSON.stringify(contentObj));
     }
     // Add route-based content to the object
@@ -155,7 +139,7 @@ export default class Engine {
     fs.writeFileSync(path.join(outputFilePath, 'index.html'), content);
   }
 
-  compileStaticRoute(route: Route | NestedRoute) {
+  compileStaticRoute(route) {
     // create destination file url
     const outputFilePath = path.join(this.path, route.destination);
     // create destination directory (will contain index.html inside)
@@ -192,12 +176,12 @@ export default class Engine {
     fs.cpSync(path.join(this.path, 'content/static'), outputStaticPath, { recursive: true });
   }
 
-  mergeAllSearchResults(urlArr: string[], outputUrl: string) {
-    const jsonArr: JsonArr = { data: [] };
+  mergeAllSearchResults(urlArr, outputUrl) {
+    const jsonArr = { data: [] };
     urlArr.forEach((url) => {
       const txtContent = fs.readFileSync(path.join(this.path, url), 'utf8') || '{}';
       if (txtContent !== '{}') {
-        const jsonContent = JSON.parse(txtContent) as JsonContent;
+        const jsonContent = JSON.parse(txtContent);
         if (jsonContent && jsonContent.items) {
           jsonArr.data.push(...jsonContent.items.filter((note) => !note.meta.draft));
         }
@@ -208,7 +192,7 @@ export default class Engine {
     fs.writeFileSync(path.join(outputSearchPath, 'search.json'), JSON.stringify(jsonArr));
   }
 
-  minify(urlArr: string[]) {
+  minify(urlArr) {
     urlArr.forEach((url) => {
       const outputStaticPath = path.join(this.path, url);
       if (fs.existsSync(outputStaticPath)) {
@@ -227,20 +211,44 @@ export default class Engine {
       }
     });
   }
+
+  // Commands
+
+  build(buildArgs) {
+    this.addRoutes(buildArgs.routes || []);
+    this.compileRoutes();
+    if (buildArgs.afterCompileCallback && typeof buildArgs.afterCompileCallback === 'Function') {
+      buildArgs.afterCompileCallback(buildArgs)
+    }
+
+    // TODO
+    // const yearSearchUrlArr = notesYearList.map((year) => `/output/notes/${year}/search.json`);
+    // Engine.mergeAllSearchResults(yearSearchUrlArr, '/output/notes/');
+
+    this.minify(buildArgs.assetsToMinify || []);
+  }
+
+  watch(watchArgs) {
+    watch(watchArgs.foldersToWatch || [], {
+      recursive: true,
+    }, () => {
+      this.build(watchArgs);
+    });
+  }
   
   // Helper methods
 
-  getAllFilesWithinDirectory(path: string) {
+  getAllFilesWithinDirectory(path) {
     return fs.readdirSync(path, { withFileTypes: true }).filter(item => !item.isDirectory()).map(item => item.name);
   }
   
-  ensureDirExists(path: string) {
+  ensureDirExists(path) {
     if (!fs.existsSync(path)){
       fs.mkdirSync(path, { recursive: true });
     }
   }
   
-  slugify(txt: string) {
+  slugify(txt) {
     const a = 'àáäâãåèéëêìíïîòóöôùúüûñçßÿœæŕśńṕẃǵǹḿǘẍźḧ·/_,:;'
     const b = 'aaaaaaeeeeiiiioooouuuuncsyoarsnpwgnmuxzh------'
     const p = new RegExp(a.split('').join('|'), 'g')
@@ -253,11 +261,11 @@ export default class Engine {
       .replace(/^-+/, '') // Trim — from start of text .replace(/-+$/, '') // Trim — from end of text
   }
   
-  async clearFolder(path: string) {
+  async clearFolder(path) {
     await fs.rm(path, { recursive: true }, () => ({}));
   }
   
-  stripFromQuotes (title: string) {
+  stripFromQuotes (title) {
     if (
       title && 
       title[0] === '"' && 
