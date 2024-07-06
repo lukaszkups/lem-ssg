@@ -37,11 +37,11 @@ export default class Engine {
     this.clearFolder(path.join(this.path, 'output/*'));
     this.routes.forEach((route) => {
       if (route) {
-        if (route.type === RouteType.dynamic) {
+        if (route.type === 'dynamic') {
           this.compileDynamicRoute(route);
-        } else if (route.type === RouteType.list) {
+        } else if (route.type === 'list') {
           this.compileListRoute(route);
-        } else if (route.type === RouteType.static) {
+        } else if (route.type === 'static') {
           this.compileStaticRoute(route);
         }
       }
