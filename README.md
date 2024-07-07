@@ -44,6 +44,25 @@ Meant to handle a single page without dynamic content, config:
 },
 ```
 
+Example render function:
+
+```
+const renderAboutMe = (contentData) => {
+  return `
+    <div class="about-hero-wrapper">
+      <h1>About me</h1>    
+    </div>
+    <div class="middle-section middle-section--about">
+      <div class="main-container">
+        <article class="about-me-content">
+          ${contentData.content}
+        </article>
+      </div>
+    </div>
+  `;
+}
+```
+
 ### Dynamic
 
 Meant to handle dynamic content (so it will handle multiple various content sources), such as blog articles. 
@@ -62,6 +81,26 @@ Config:
 },
 ```
 
+Example render function:
+
+```
+const renderBlogNote = (contentData) => {
+  return `
+  <div class="note-wrapper">
+    <h2>${contentData?.meta?.title}</h2>
+    <p>Published at ${contentData?.meta?.date}</p>
+  </div>
+  <div class="article-content-wrapper">
+    <div class="main-container main-container--article">
+      <article>
+        ${contentData.content}
+      </article>
+    </div>
+  </div>
+  `;
+}
+```
+
 ### List
 
 Meant to list all the files from specified folder, e.g. `/content/blog/`, 
@@ -78,4 +117,41 @@ Config:
   destination: "/your-output-path-for-all-of-your-articles-eg-blog/",
   template: renderFunctionThatTakesDynamicListOfItemsSuchAsBlogNotesAndReturnsCompiledTemplate,
 },
+```
+
+Example render function:
+
+```
+const renderArticle = (article) => {
+  return `
+  <a class="cube article-item" href="${article.url}">
+    <h2>${article?.meta?.title || JSON.stringify(article)} - ${article?.meta?.date}</h2>
+  </a>
+  `.replaceAll("\t", "").replaceAll("  ", " ").trim();
+}
+
+const renderArticles = (articles) => {
+  let htmlString = '';
+  if (articles?.length) {
+    articles.forEach((article) => {
+      if (!article.meta.draft) {
+        htmlString += renderArticle(article);
+      }
+    });
+  } else {
+    htmlString += '<h1 class="no-articles-yet">No articles yet, working on it!</h1>'
+  }
+  return htmlString;
+}
+
+const renderBlogNotesList = (contentData) => {
+  return `
+    <div class="notes-index-wrapper">
+      <h2>Blog notes</h2>
+    </div>
+    <div id="notes-list" class="article-list-wrapper">
+      ${renderArticles(contentData.items)}
+    </div>
+  `;
+}
 ```
