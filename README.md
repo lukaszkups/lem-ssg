@@ -46,7 +46,7 @@ Meant to handle a single page without dynamic content, config:
 
 ### Dynamic
 
-Meant to handle dynamic content, such as blog articles. 
+Meant to handle dynamic content (so it will handle multiple various content sources), such as blog articles. 
 
 Every article will be generated in specified folder with following sub-path: `/article-slug-generated-from-its-title/index.html` so that it will be nicely accessible on your server in human readable manner.
 
@@ -66,7 +66,7 @@ Config:
 
 Meant to list all the files from specified folder, e.g. `/content/blog/`, 
 
-Every list page will be generated in specified folder as `index.html` file, so that it will be nicely accessible on your server in human readable manner (e.g. as `/blog/` page).
+Every list page will be generated in specified folder as `index.html` file (e.g. `/blog/index.html`), so that it will be nicely accessible on your server in human readable manner (e.g. as `/blog/` page).
 
 Config:
 
