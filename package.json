@@ -2,6 +2,9 @@
   "name": "lem-ssg",
   "version": "0.0.2",
   "type": "module",
+  "license": "MIT",
+  "description": "A DIY static site generator utility ",
+  "keywords": ["blog", "markdown", "static-site-generator", "blogging", "blog-engine", "static-site-generation", "website-development", "static-site-building"],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
