@@ -9,7 +9,7 @@ export default defineConfig({
   build: {
     lib: {
       name: 'lem',
-      entry: resolve(__dirname, 'main.js'),
+      entry: resolve(__dirname, './src/engine.ts'),
       formats: ['es', 'umd']
     }
   }
