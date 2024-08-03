@@ -5,13 +5,23 @@
   "type": "module",
   "license": "MIT",
   "description": "A DIY static site generator utility ",
-  "keywords": ["blog", "markdown", "static-site-generator", "blogging", "blog-engine", "static-site-generation", "website-development", "static-site-building"],
+  "keywords": [
+    "blog",
+    "markdown",
+    "static-site-generator",
+    "blogging",
+    "blog-engine",
+    "static-site-generation",
+    "website-development",
+    "static-site-building"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/node": "^22.1.0",
     "typescript": "^5.2.2",
     "vite": "^5.3.4"
   },
