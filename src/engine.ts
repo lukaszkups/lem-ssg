@@ -101,7 +101,42 @@ export default class Engine {
   }
 
   compileBlogEntryRoute(route: LemRoute) {
-
+    const routePath = path.join(this.path, route.sourcePath)
+    // collect markdown files within directory
+    const sourceFilePaths = this.core.getAllFilesWithinDirectory(routePath);
+    // create destination list directory (will contain folders 1 per list item with index.html file inside)
+    this.core.ensureDirExists(path.join(this.path, route.destinationPath));
+    // loop over source files and save them in destination directory
+    sourceFilePaths.forEach((sourceFilePath) => {
+      // read single file
+      const txtContent = fs.readFileSync(path.join(routePath, sourceFilePath), 'utf8');
+      // extract markdown and parse it into HTML
+      const htmlContent = this.markdown.makeHtml(txtContent);
+      // extract metadata from the current file
+      const meta = this.markdown.getMetadata();
+      // Remove extra quotation characters from title
+      if (meta?.title) {
+        meta.title = this.core.stripFromQuotes(meta.title);
+      }
+      // create reusable object that we send to render functions
+      const contentObj = {
+        meta: meta,
+        slug: meta?.slug || this.core.slugify(meta.title || String(Date.now())),
+        content: htmlContent
+      }
+      // Add route-based content to the object
+      if (route.content) {
+        contentObj.routeContent = route.content;
+      }
+      // create destination file url
+      const outputFilePath = path.join(this.path, route.destination, contentObj.slug);
+      // create destination route item folder
+      this.ensureDirExists(outputFilePath);
+      // compile content object with template
+      const content = route.template(contentObj);
+      // save file in the final path as index.html (for seamless routing)
+      fs.writeFileSync(path.join(outputFilePath, 'index.html'), content);
+    });
   }
 
   compileBlogNotesListRoute(route: LemRoute) {
