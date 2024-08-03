@@ -12,33 +12,36 @@ import { RouteType } from './enums';
 
 
 export default class Engine {
-  path: fs.PathLike
-  contentPath: fs.PathLike;
-  contentStaticAssetsPath: fs.PathLike;
-  themePath: fs.PathLike;
-  assetsPath: fs.PathLike;
-  outputPath: fs.PathLike;
-  outputStaticPath: fs.PathLike;
-  outputAssetsPath: fs.PathLike;
+  path: string
+  contentPath: string;
+  contentStaticAssetsPath: string;
+  themePath: string;
+  assetsPath: string;
+  outputPath: string;
+  outputStaticPath: string;
+  outputAssetsPath: string;
   store: LemStore;
   core: LemCore;
-  
+  markdown: showdown;
+
   constructor(args: EngineArgs) {
     const store = new LemStore();
     const currentPath = process.cwd();
     this.path = currentPath;
-    this.contentPath = path.join(currentPath, args.contentPath || 'content');
-    this.contentStaticAssetsPath = path.join(this.contentPath, 'static');
-    this.themePath = path.join(currentPath, args.themePath || 'theme');
-    this.assetsPath = path.join(currentPath, args.assetsPath || 'assets');
-    this.outputPath = path.join(currentPath, args.outputPath || 'output');
+    this.contentPath = path.join(currentPath, args.contentPath || 'content').toString();
+    this.contentStaticAssetsPath = path.join(this.contentPath, 'static').toString();
+    this.themePath = path.join(currentPath, args.themePath || 'theme').toString();
+    this.assetsPath = path.join(currentPath, args.assetsPath || 'assets').toString();
+    this.outputPath = path.join(currentPath, args.outputPath || 'output').toString();
     const outputPath = this.outputPath.toString();
-    this.outputStaticPath = path.join(outputPath, 'static')
-    this.outputAssetsPath = path.join(outputPath, 'assets')
+    this.outputStaticPath = path.join(outputPath, 'static').toString();
+    this.outputAssetsPath = path.join(outputPath, 'assets').toString();
     this.store = store;
     this.core = new LemCore({
       store
     });
+    this.markdown = new showdown.Converter({ metadata: true });
+    this.markdown.setFlavor('github');
   }
 
   compile() {
@@ -71,7 +74,30 @@ export default class Engine {
   }
 
   compileStaticRoute(route: LemRoute) {
-    
+    // create destination file url
+    const outputFilePath = path.join(this.path, route.destinationPath).toString();
+    // create destination directory (will contain index.html inside)
+    this.core.ensureDirExists(outputFilePath);
+    // if source prop is passed (to direct .md file) then fetch its contents
+    if (route.sourcePath) {
+      const txtContent = fs.readFileSync(path.join(this.path, route.sourcePath), 'utf8');
+      // extract metadata from the current file
+      const htmlContent = this.markdown.makeHtml(txtContent);
+      // extract metadata from the current file
+      const meta = this.markdown.getMetadata();
+      // create reusable object that we send to render functions
+      const contentObj = {
+        meta: meta,
+        content: htmlContent
+      }
+      const routeContent = { ...contentObj, ...route.content };
+      // compile content object with template
+      const content = route.template(routeContent || { title: Date.now() });
+      // save file in the final path as index.html (for seamless routing)
+      fs.writeFileSync(path.join(outputFilePath, 'index.html'), content);
+    } else {
+      throw new Error('Route does not have source path!');
+    }
   }
 
   compileBlogEntryRoute(route: LemRoute) {
@@ -84,17 +110,17 @@ export default class Engine {
 
   copyStaticFilesDir() {
     this.core.ensureDirExists(this.outputStaticPath);
-    fs.cpSync(this.assetsPath.toString(), this.outputStaticPath.toString(), { recursive: true });
+    fs.cpSync(this.assetsPath, this.outputStaticPath, { recursive: true });
   }
 
   copyContentAssetsDir() {
     this.core.ensureDirExists(this.outputAssetsPath);
-    fs.cpSync(this.contentStaticAssetsPath.toString(), this.outputAssetsPath.toString(), { recursive: true });
+    fs.cpSync(this.contentStaticAssetsPath, this.outputAssetsPath, { recursive: true });
   }
 
   copyRootFiles() {
-    const pathToRootFolderContents = path.join(this.contentPath.toString(), 'root');
+    const pathToRootFolderContents = path.join(this.contentPath, 'root');
     this.core.ensureDirExists(pathToRootFolderContents);
-    fs.cpSync(pathToRootFolderContents, this.outputPath.toString(), { recursive: true });
+    fs.cpSync(pathToRootFolderContents, this.outputPath, { recursive: true });
   }
 }

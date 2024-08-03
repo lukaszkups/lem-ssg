@@ -8,12 +8,23 @@ export type EngineArgs = {
   outputPath?: string;
 }
 
+export type Keyable = {
+  [key: string | number | symbol]: string | string[] | number | number[]
+}
+
+export type RouteContents = {
+  meta: Keyable;
+  content: string;
+}
+
 export type LemRoute = {
   type: RouteType,
   name: string,
   sourcePath: string,
   destinationPath: string,
   themeUrl: string,
+  template: (routeContents: RouteContents) => string,
+  content?: Keyable,
 }
 
 export type CoreArgs = {
