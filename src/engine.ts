@@ -155,7 +155,7 @@ export default class Engine {
     this.createSearchJsonfile(route, entriesArr);
 
     // compile blog notes listing with pagination handling
-    
+    this.compileBlogNotesListing(route, entriesArr);
   }
 
   copyStaticFilesDir() {
@@ -180,5 +180,12 @@ export default class Engine {
     fs.writeFileSync(path.join(destinationPath, 'search.json'), JSON.stringify({
       data: entriesArr
     }));
+  }
+
+  compileBlogNotesListing(route: LemRoute, entriesArr: SearchEntryItem[]) {
+    let pages = 0;
+    if (route.pagination && route.pageSize && route.pageSize > 0) {
+
+    }
   }
 }
