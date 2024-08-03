@@ -23,10 +23,21 @@ export type LemRoute = {
   sourcePath: string,
   destinationPath: string,
   themeUrl: string,
-  template: (routeContents: RouteContents) => string,
+  template: {
+    static?: (routeContents: RouteContents) => string,
+    entry?: (routeContents: RouteContents) => string,
+    list?: (routeContents: RouteContents) => string,
+  },
   content?: Keyable,
+  pagination?: boolean,
+  pageSize?: number,
 }
 
 export type CoreArgs = {
   store: LemStore;
+}
+
+export type SearchEntryItem = {
+  title?: string,
+  url?: string,
 }

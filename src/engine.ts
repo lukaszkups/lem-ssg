@@ -7,7 +7,7 @@ import UglifyJS from 'uglify-js';
 import uglifycss from 'uglifycss';
 import LemCore from './core';
 import LemStore from './store';
-import type { EngineArgs, LemRoute } from './types';
+import type { EngineArgs, LemRoute, SearchEntryItem } from './types';
 import { RouteType } from './enums';
 
 
@@ -63,11 +63,8 @@ export default class Engine {
         case RouteType.static:
           this.compileStaticRoute(route);
           break;
-        case RouteType.blogEntry:
-          this.compileBlogEntryRoute(route);
-          break;
-        case RouteType.blogNotesList:
-          this.compileBlogNotesListRoute(route);
+        case RouteType.blog:
+          this.compileBlogRoute(route);
           break;
       }
     });
@@ -75,7 +72,7 @@ export default class Engine {
 
   compileStaticRoute(route: LemRoute) {
     // create destination file url
-    const outputFilePath = path.join(this.path, route.destinationPath).toString();
+    const outputFilePath = path.join(this.outputPath, route.destinationPath).toString();
     // create destination directory (will contain index.html inside)
     this.core.ensureDirExists(outputFilePath);
     // if source prop is passed (to direct .md file) then fetch its contents
@@ -88,11 +85,14 @@ export default class Engine {
       // create reusable object that we send to render functions
       const contentObj = {
         meta: meta,
-        content: htmlContent
+        content: htmlContent // this is parsed "content" of markdown file as HTML
       }
       const routeContent = { ...contentObj, ...route.content };
       // compile content object with template
-      const content = route.template(routeContent || { title: Date.now() });
+      let content = '';
+      if (route.template.static && typeof route.template.static === 'function') {
+        content = route.template.static(routeContent || { title: Date.now() });
+      }
       // save file in the final path as index.html (for seamless routing)
       fs.writeFileSync(path.join(outputFilePath, 'index.html'), content);
     } else {
@@ -100,12 +100,14 @@ export default class Engine {
     }
   }
 
-  compileBlogEntryRoute(route: LemRoute) {
+  compileBlogRoute(route: LemRoute) {
     const routePath = path.join(this.path, route.sourcePath)
     // collect markdown files within directory
     const sourceFilePaths = this.core.getAllFilesWithinDirectory(routePath);
-    // create destination list directory (will contain folders 1 per list item with index.html file inside)
+    // create destination list (root) directory (will contain folders 1 per list item with index.html file inside)
     this.core.ensureDirExists(path.join(this.path, route.destinationPath));
+    // this arr will contain all entries (for pagination purposes etc.)
+    const entriesArr: SearchEntryItem[] = [];
     // loop over source files and save them in destination directory
     sourceFilePaths.forEach((sourceFilePath) => {
       // read single file
@@ -120,27 +122,40 @@ export default class Engine {
       }
       // create reusable object that we send to render functions
       const contentObj = {
-        meta: meta,
+        meta,
         slug: meta?.slug || this.core.slugify(meta.title || String(Date.now())),
-        content: htmlContent
+        content: htmlContent, // this is parsed "content" of markdown file as HTML
+        routeContent: {},
+      }
+      // exclude drafts from search/pagination indexing
+      if (!meta.draft) {
+        entriesArr.push({
+          ...meta,
+          url: path.join(route.destinationPath, contentObj.slug)
+        });
       }
       // Add route-based content to the object
       if (route.content) {
         contentObj.routeContent = route.content;
       }
       // create destination file url
-      const outputFilePath = path.join(this.path, route.destination, contentObj.slug);
+      const outputFilePath = path.join(this.path, route.destinationPath, contentObj.slug);
       // create destination route item folder
-      this.ensureDirExists(outputFilePath);
+      this.core.ensureDirExists(outputFilePath);
       // compile content object with template
-      const content = route.template(contentObj);
+      let content = '';
+      if (route.template.entry && typeof route.template.entry === 'function') {
+        content = route.template.entry(contentObj);
+      }
       // save file in the final path as index.html (for seamless routing)
       fs.writeFileSync(path.join(outputFilePath, 'index.html'), content);
     });
-  }
 
-  compileBlogNotesListRoute(route: LemRoute) {
+    // create searchable json file and blog note list pages with pagination
+    this.createSearchJsonfile(route, entriesArr);
 
+    // compile blog notes listing with pagination handling
+    
   }
 
   copyStaticFilesDir() {
@@ -157,5 +172,13 @@ export default class Engine {
     const pathToRootFolderContents = path.join(this.contentPath, 'root');
     this.core.ensureDirExists(pathToRootFolderContents);
     fs.cpSync(pathToRootFolderContents, this.outputPath, { recursive: true });
+  }
+
+  createSearchJsonfile(route: LemRoute, entriesArr: SearchEntryItem[]) {
+    const destinationPath = path.join(this.outputPath, route.destinationPath);
+    this.core.ensureDirExists(destinationPath);
+    fs.writeFileSync(path.join(destinationPath, 'search.json'), JSON.stringify({
+      data: entriesArr
+    }));
   }
 }
