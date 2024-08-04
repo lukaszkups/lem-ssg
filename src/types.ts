@@ -17,6 +17,12 @@ export type RouteContents = {
   content: string;
 }
 
+export type RouteListContents = {
+  list: SearchEntryItem[],
+  currentPage?: number,
+  paginationLinks?: string[]
+}
+
 export type LemRoute = {
   type: RouteType,
   name: string,
@@ -26,7 +32,7 @@ export type LemRoute = {
   template: {
     static?: (routeContents: RouteContents) => string,
     entry?: (routeContents: RouteContents) => string,
-    list?: (routeContents: RouteContents) => string,
+    list?: (routeContents: RouteListContents) => string,
   },
   content?: Keyable,
   pagination?: boolean,

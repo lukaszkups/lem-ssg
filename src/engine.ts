@@ -185,14 +185,42 @@ export default class Engine {
   compileBlogNotesListing(route: LemRoute, entriesArr: SearchEntryItem[]) {
     if (route.pagination && route.pageSize && route.pageSize > 0) {
       const pages = Math.ceil(entriesArr.length / route.pageSize);
-      const paginationLinks = [];
+      const paginationLinks: string[] = [];
       for (let i = 0; i < pages; i++) {
         // let first page doesn't have to contain page number
-        paginationLinks.push(i === 0 ? route.destinationPath : `${route.destinationPath}/page/${i + 1}/index.html`);
+        paginationLinks.push(i === 0 ? route.destinationPath : `${route.destinationPath}/page/${i + 1}/`);
         // we need to create page number folder with index.html inside it
-        this.core.ensureDirExists(path.join(this.outputPath, paginationLinks[i].slice(0, -10)));
-        
+        this.core.ensureDirExists(path.join(this.outputPath, paginationLinks[i]));
       }
+      // Create every pagination page (compile template etc.)
+      paginationLinks.forEach((pageLink: string, pageIndex: number) => {
+        // @ts-ignore-next-line - we've checked if pageSize exists already
+        const currentPageOfEntries = entriesArr.slice(pageIndex * route.pageSize, (pageIndex + 1) * route.pageSize) || [];
+        const currentPage = pageIndex + 1;
+        // Compile template
+        let content = '';
+        const contentObj = {
+          list: currentPageOfEntries,
+          currentPage,
+          paginationLinks,
+        }
+        if (route.template.list && typeof route.template.list === 'function') {
+          content = route.template.list(contentObj);
+        }
+        // Save current page list file
+        fs.writeFileSync(path.join(pageLink, 'index.html'), content);
+      })
+    } else {
+      // Handle unpaginated list of entries
+      let content = '';
+      const contentObj = {
+        list: entriesArr,
+      }
+      if (route.template.list && typeof route.template.list === 'function') {
+        content = route.template.list(contentObj);
+      }
+      // Save current page list file
+      fs.writeFileSync(path.join(route.destinationPath, 'index.html'), content);
     }
   }
 }
