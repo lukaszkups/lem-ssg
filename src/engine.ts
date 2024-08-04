@@ -1,13 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import watch from 'node-watch';
-import showdown from 'showdown';
-import fm from 'front-matter';
+import showdown, { Converter } from 'showdown';
 import UglifyJS from 'uglify-js';
 import uglifycss from 'uglifycss';
 import LemCore from './core';
 import LemStore from './store';
-import type { EngineArgs, LemRoute, SearchEntryItem } from './types';
+import type { BuildArgs, EngineArgs, Keyable, LemRoute, RouteContents, SearchEntryItem, WatchArgs } from './types';
 import { RouteType } from './enums';
 
 
@@ -22,7 +21,7 @@ export default class Engine {
   outputAssetsPath: string;
   store: LemStore;
   core: LemCore;
-  markdown: showdown;
+  markdown: Converter;
 
   constructor(args: EngineArgs) {
     const store = new LemStore();
@@ -84,14 +83,14 @@ export default class Engine {
       const meta = this.markdown.getMetadata();
       // create reusable object that we send to render functions
       const contentObj = {
-        meta: meta,
+        meta,
         content: htmlContent // this is parsed "content" of markdown file as HTML
       }
       const routeContent = { ...contentObj, ...route.content };
       // compile content object with template
       let content = '';
       if (route.template.static && typeof route.template.static === 'function') {
-        content = route.template.static(routeContent || { title: Date.now() });
+        content = route.template.static(routeContent as RouteContents);
       }
       // save file in the final path as index.html (for seamless routing)
       fs.writeFileSync(path.join(outputFilePath, 'index.html'), content);
@@ -115,15 +114,15 @@ export default class Engine {
       // extract markdown and parse it into HTML
       const htmlContent = this.markdown.makeHtml(txtContent);
       // extract metadata from the current file
-      const meta = this.markdown.getMetadata();
+      const meta = this.markdown.getMetadata() as Keyable;
       // Remove extra quotation characters from title
       if (meta?.title) {
-        meta.title = this.core.stripFromQuotes(meta.title);
+        meta.title = this.core.stripFromQuotes(meta.title as string);
       }
       // create reusable object that we send to render functions
       const contentObj = {
         meta,
-        slug: meta?.slug || this.core.slugify(meta.title || String(Date.now())),
+        slug: meta?.slug || this.core.slugify(meta.title as string || String(Date.now())),
         content: htmlContent, // this is parsed "content" of markdown file as HTML
         routeContent: {},
       }
@@ -131,7 +130,7 @@ export default class Engine {
       if (!meta.draft) {
         entriesArr.push({
           ...meta,
-          url: path.join(route.destinationPath, contentObj.slug)
+          url: path.join(route.destinationPath, contentObj.slug as string)
         });
       }
       // Add route-based content to the object
@@ -139,7 +138,7 @@ export default class Engine {
         contentObj.routeContent = route.content;
       }
       // create destination file url
-      const outputFilePath = path.join(this.path, route.destinationPath, contentObj.slug);
+      const outputFilePath = path.join(this.path, route.destinationPath, contentObj.slug as string);
       // create destination route item folder
       this.core.ensureDirExists(outputFilePath);
       // compile content object with template
@@ -157,6 +156,28 @@ export default class Engine {
     // compile blog notes listing with pagination handling
     this.compileBlogNotesListing(route, entriesArr);
   }
+
+  // Commands
+
+  build(buildArgs: BuildArgs) {
+    this.core.addRoutes(buildArgs.routes || []);
+    this.compileRoutes();
+    if (buildArgs.afterCompileCallback && typeof buildArgs.afterCompileCallback === 'function') {
+      buildArgs.afterCompileCallback(buildArgs);
+    }
+
+    this.minifyAssets(buildArgs.assetsToMinify || []);
+  }
+
+  watch(watchArgs: WatchArgs) {
+    watch(watchArgs.foldersToWatch || [], {
+      recursive: true,
+    }, () => {
+      this.build(watchArgs);
+    });
+  }
+
+  // Helper methods
 
   copyStaticFilesDir() {
     this.core.ensureDirExists(this.outputStaticPath);
@@ -225,7 +246,7 @@ export default class Engine {
   }
 
   // Will uglify/minify basic js/css files and move it into output static path folder
-  minifyJsCss(urlArr: string[]) {
+  minifyAssets(urlArr: string[]) {
     urlArr.forEach((url) => {
       const outputStaticPath = path.join(this.outputStaticPath, url);
       if (fs.existsSync(outputStaticPath)) {

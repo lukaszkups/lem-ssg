@@ -2,14 +2,14 @@ import { RouteType } from "./enums";
 import LemStore from "./store";
 
 export type EngineArgs = {
-  contentPath?: string
+  contentPath?: string;
   themePath?: string;
   assetsPath?: string;
   outputPath?: string;
 }
 
 export type Keyable = {
-  [key: string | number | symbol]: string | string[] | number | number[]
+  [key: string | number | symbol]: string | string[] | number | number[];
 }
 
 export type RouteContents = {
@@ -18,25 +18,25 @@ export type RouteContents = {
 }
 
 export type RouteListContents = {
-  list: SearchEntryItem[],
-  currentPage?: number,
-  paginationLinks?: string[]
+  list: SearchEntryItem[];
+  currentPage?: number;
+  paginationLinks?: string[];
 }
 
 export type LemRoute = {
-  type: RouteType,
-  name: string,
-  sourcePath: string,
-  destinationPath: string,
-  themeUrl: string,
+  type: RouteType;
+  name: string;
+  sourcePath: string;
+  destinationPath: string;
+  themeUrl: string;
   template: {
-    static?: (routeContents: RouteContents) => string,
-    entry?: (routeContents: RouteContents) => string,
-    list?: (routeContents: RouteListContents) => string,
+    static?: (routeContents: RouteContents) => string;
+    entry?: (routeContents: RouteContents) => string;
+    list?: (routeContents: RouteListContents) => string;
   },
-  content?: Keyable,
-  pagination?: boolean,
-  pageSize?: number,
+  content?: Keyable;
+  pagination?: boolean;
+  pageSize?: number;
 }
 
 export type CoreArgs = {
@@ -44,6 +44,19 @@ export type CoreArgs = {
 }
 
 export type SearchEntryItem = {
-  title?: string,
-  url?: string,
+  title?: string;
+  url?: string;
+}
+
+export type BuildArgs = {
+  routes: LemRoute[];
+  assetsToMinify: string[];
+  afterCompileCallback?: (args: BuildArgs) => void;
+}
+
+export type WatchArgs = {
+  foldersToWatch: string[];
+  routes: LemRoute[];
+  assetsToMinify: string[];
+  afterCompileCallback?: (args: BuildArgs) => void;
 }
