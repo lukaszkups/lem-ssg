@@ -12,7 +12,7 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      name: 'lem',
+      name: 'lem-ssg',
       entry: resolve(__dirname, './src/engine.ts'),
       formats: ['es', 'umd']
     }
