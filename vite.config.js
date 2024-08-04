@@ -13,8 +13,8 @@ export default defineConfig({
   build: {
     lib: {
       name: 'lem-ssg',
+      fileName: 'lem-ssg',
       entry: resolve(__dirname, 'main.ts'),
-      formats: ['es']
     }
   },
   resolve: {
