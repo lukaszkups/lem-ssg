@@ -3,7 +3,6 @@ import LemStore from "./store";
 
 export type EngineArgs = {
   contentPath?: string;
-  themePath?: string;
   assetsPath?: string;
   outputPath?: string;
 }
@@ -28,7 +27,6 @@ export type LemRoute = {
   name: string;
   sourcePath: string;
   destinationPath: string;
-  themeUrl: string;
   template: {
     static?: (routeContents: RouteContents) => string;
     entry?: (routeContents: RouteContents) => string;

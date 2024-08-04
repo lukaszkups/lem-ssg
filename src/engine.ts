@@ -14,7 +14,6 @@ export default class Engine {
   path: string
   contentPath: string;
   contentStaticAssetsPath: string;
-  themePath: string;
   assetsPath: string;
   outputPath: string;
   outputStaticPath: string;
@@ -29,7 +28,6 @@ export default class Engine {
     this.path = currentPath;
     this.contentPath = path.join(currentPath, args.contentPath || 'content').toString();
     this.contentStaticAssetsPath = path.join(this.contentPath, 'static').toString();
-    this.themePath = path.join(currentPath, args.themePath || 'theme').toString();
     this.assetsPath = path.join(currentPath, args.assetsPath || 'assets').toString();
     this.outputPath = path.join(currentPath, args.outputPath || 'output').toString();
     const outputPath = this.outputPath.toString();
