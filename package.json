@@ -4,6 +4,7 @@
   "type": "module",
   "license": "MIT",
   "description": "A DIY static site generator utility ",
+  "main": "dist/lem-ssg.umd.cjs",
   "keywords": [
     "blog",
     "markdown",
