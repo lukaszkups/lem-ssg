@@ -183,9 +183,16 @@ export default class Engine {
   }
 
   compileBlogNotesListing(route: LemRoute, entriesArr: SearchEntryItem[]) {
-    let pages = 0;
     if (route.pagination && route.pageSize && route.pageSize > 0) {
-
+      const pages = Math.ceil(entriesArr.length / route.pageSize);
+      const paginationLinks = [];
+      for (let i = 0; i < pages; i++) {
+        // let first page doesn't have to contain page number
+        paginationLinks.push(i === 0 ? route.destinationPath : `${route.destinationPath}/page/${i + 1}/index.html`);
+        // we need to create page number folder with index.html inside it
+        this.core.ensureDirExists(path.join(this.outputPath, paginationLinks[i].slice(0, -10)));
+        
+      }
     }
   }
 }
