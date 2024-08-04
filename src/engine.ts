@@ -223,4 +223,24 @@ export default class Engine {
       fs.writeFileSync(path.join(route.destinationPath, 'index.html'), content);
     }
   }
+
+  // Will uglify/minify basic js/css files and move it into output static path folder
+  minifyJsCss(urlArr: string[]) {
+    urlArr.forEach((url) => {
+      const outputStaticPath = path.join(this.outputStaticPath, url);
+      if (fs.existsSync(outputStaticPath)) {
+        const txtContent = fs.readFileSync(outputStaticPath, 'utf8') || '';
+        if (txtContent) {
+          // handle js/css minification
+          if (url.includes('.js')) {
+            const result = UglifyJS.minify(txtContent);
+            fs.writeFileSync(outputStaticPath, result?.code || txtContent);
+          } else if (url.includes('.css')) {
+            const result = uglifycss.processString(txtContent);
+            fs.writeFileSync(outputStaticPath, result || txtContent);
+          }
+        }
+      }
+    });
+  }
 }

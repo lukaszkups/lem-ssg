@@ -42,7 +42,7 @@ export default class LemCore {
   }
 
   getAllFilesWithinDirectory(path: fs.PathLike) {
-    return fs.readdirSync(path, { withFileTypes: true })
+    return fs.readdirSync(path, { withFileTypes: true, recursive: true })
       .filter((item: fs.Dirent) => !item.isDirectory())
       .map((item: fs.Dirent) => item.name);
   }
@@ -68,6 +68,5 @@ export default class LemCore {
       return txt.replace(/&quot;/g, '');
     }
     return txt;
-  }  
-
+  }
 }
