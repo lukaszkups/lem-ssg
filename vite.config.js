@@ -11,6 +11,7 @@ export default defineConfig({
     }),
   ],
   build: {
+    sourcemap: true,
     lib: {
       name: 'lem-ssg',
       fileName: 'lem-ssg',
