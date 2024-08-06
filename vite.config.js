@@ -20,7 +20,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      src: resolve('src/')
+      src: resolve('src/'),
+      util: 'rollup-plugin-node-polyfills/polyfills/util',
     }
   }
 });
