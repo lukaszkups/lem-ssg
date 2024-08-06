@@ -1,6 +1,6 @@
 {
   "name": "lem-ssg",
-  "version": "0.0.5-10",
+  "version": "0.0.5-9",
   "type": "module",
   "license": "MIT",
   "description": "A DIY static site generator utility ",
@@ -30,12 +30,13 @@
     "@types/showdown": "^2.0.6",
     "@types/uglify-js": "^3.17.5",
     "@types/uglifycss": "^0.0.11",
+    "rollup-plugin-node-externals": "^7.1.2",
     "typescript": "^5.2.2",
     "vite": "^5.3.4",
     "vite-plugin-dts": "^4.0.0-beta.2",
     "vite-plugin-node-polyfills": "^0.22.0"
   },
-  "dependencies": {
+  "peerDependencies": {
     "http-server": "^14.1.1",
     "node-watch": "^0.7.4",
     "path": "^0.12.7",
