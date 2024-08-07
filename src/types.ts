@@ -1,3 +1,10 @@
+import fs from 'fs';
+import path from 'path';
+import watch from 'node-watch';
+import showdown from 'showdown';
+import UglifyJS from 'uglify-js';
+import uglifycss from 'uglifycss';
+
 import { RouteType } from "./enums";
 import LemStore from "./store";
 
@@ -57,4 +64,13 @@ export type WatchArgs = {
   routes: LemRoute[];
   assetsToMinify: string[];
   afterCompileCallback?: (args: BuildArgs) => void;
+}
+
+export type Deps = {
+  fs: typeof fs;
+  path: typeof path;
+  watch: typeof watch;
+  showdown: typeof showdown;
+  UglifyJS: typeof UglifyJS;
+  uglifycss: typeof uglifycss;
 }
