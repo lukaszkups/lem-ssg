@@ -1,17 +1,22 @@
-import fs from 'fs';
-import path from 'path';
-import watch from 'node-watch';
-import showdown, { Converter } from 'showdown';
-import UglifyJS from 'uglify-js';
-import uglifycss from 'uglifycss';
+// import fs from 'fs';
+// import path from 'path';
+// import watch from 'node-watch';
+import { Converter } from 'showdown';
+// import UglifyJS from 'uglify-js';
+// import uglifycss from 'uglifycss';
 import LemCore from './core';
 import LemStore from './store';
-import type { BuildArgs, EngineArgs, Keyable, LemRoute, RouteContents, SearchEntryItem, WatchArgs } from './types';
+import type { BuildArgs, Deps, EngineArgs, Keyable, LemRoute, RouteContents, SearchEntryItem, WatchArgs } from './types';
 import { RouteType } from './enums';
 
 
 export default class Engine {
-  path: string
+  path: Deps['path'];
+  fs: Deps['fs'];
+  nodeWatch: Deps['watch'];
+  uglifyJs: Deps['UglifyJS'];
+  uglifyCss: Deps['uglifycss'];
+  currentPath: string
   contentPath: string;
   contentStaticAssetsPath: string;
   assetsPath: string;
@@ -22,17 +27,23 @@ export default class Engine {
   core: LemCore;
   markdown: Converter;
 
-  constructor(args: EngineArgs) {
+  constructor(args: EngineArgs, deps: Deps) {
     const store = new LemStore();
     const currentPath = process.cwd();
-    this.path = currentPath;
-    this.contentPath = path.join(currentPath, args.contentPath || 'content').toString();
-    this.contentStaticAssetsPath = path.join(this.contentPath, 'static').toString();
-    this.assetsPath = path.join(currentPath, args.assetsPath || 'assets').toString();
-    this.outputPath = path.join(currentPath, args.outputPath || 'output').toString();
+    const showdown = deps.showdown;
+    this.path = deps.path;
+    this.fs = deps.fs;
+    this.nodeWatch = deps.watch;
+    this.uglifyJs = deps.UglifyJS;
+    this.uglifyCss = deps.uglifycss;
+    this.currentPath = currentPath;
+    this.contentPath = this.path.join(currentPath, args.contentPath || 'content').toString();
+    this.contentStaticAssetsPath = this.path.join(this.contentPath, 'static').toString();
+    this.assetsPath = this.path.join(currentPath, args.assetsPath || 'assets').toString();
+    this.outputPath = this.path.join(currentPath, args.outputPath || 'output').toString();
     const outputPath = this.outputPath.toString();
-    this.outputStaticPath = path.join(outputPath, 'static').toString();
-    this.outputAssetsPath = path.join(outputPath, 'assets').toString();
+    this.outputStaticPath = this.path.join(outputPath, 'static').toString();
+    this.outputAssetsPath = this.path.join(outputPath, 'assets').toString();
     this.store = store;
     this.core = new LemCore({
       store
@@ -69,12 +80,12 @@ export default class Engine {
 
   compileStaticRoute(route: LemRoute) {
     // create destination file url
-    const outputFilePath = path.join(this.outputPath, route.destinationPath).toString();
+    const outputFilePath = this.path.join(this.outputPath, route.destinationPath).toString();
     // create destination directory (will contain index.html inside)
     this.core.ensureDirExists(outputFilePath);
     // if source prop is passed (to direct .md file) then fetch its contents
     if (route.sourcePath) {
-      const txtContent = fs.readFileSync(path.join(this.path, route.sourcePath), 'utf8');
+      const txtContent = this.fs.readFileSync(this.path.join(this.currentPath, route.sourcePath), 'utf8');
       // extract metadata from the current file
       const htmlContent = this.markdown.makeHtml(txtContent);
       // extract metadata from the current file
@@ -91,24 +102,24 @@ export default class Engine {
         content = route.template.static(routeContent as RouteContents);
       }
       // save file in the final path as index.html (for seamless routing)
-      fs.writeFileSync(path.join(outputFilePath, 'index.html'), content);
+      this.fs.writeFileSync(this.path.join(outputFilePath, 'index.html'), content);
     } else {
       throw new Error('Route does not have source path!');
     }
   }
 
   compileBlogRoute(route: LemRoute) {
-    const routePath = path.join(this.path, route.sourcePath)
+    const routePath = this.path.join(this.currentPath, route.sourcePath)
     // collect markdown files within directory
     const sourceFilePaths = this.core.getAllFilesWithinDirectory(routePath);
     // create destination list (root) directory (will contain folders 1 per list item with index.html file inside)
-    this.core.ensureDirExists(path.join(this.path, route.destinationPath));
+    this.core.ensureDirExists(this.path.join(this.currentPath, route.destinationPath));
     // this arr will contain all entries (for pagination purposes etc.)
     const entriesArr: SearchEntryItem[] = [];
     // loop over source files and save them in destination directory
     sourceFilePaths.forEach((sourceFilePath) => {
       // read single file
-      const txtContent = fs.readFileSync(path.join(routePath, sourceFilePath), 'utf8');
+      const txtContent = this.fs.readFileSync(this.path.join(routePath, sourceFilePath), 'utf8');
       // extract markdown and parse it into HTML
       const htmlContent = this.markdown.makeHtml(txtContent);
       // extract metadata from the current file
@@ -128,7 +139,7 @@ export default class Engine {
       if (!meta.draft) {
         entriesArr.push({
           ...meta,
-          url: path.join(route.destinationPath, contentObj.slug as string)
+          url: this.path.join(route.destinationPath, contentObj.slug as string)
         });
       }
       // Add route-based content to the object
@@ -136,7 +147,7 @@ export default class Engine {
         contentObj.routeContent = route.content;
       }
       // create destination file url
-      const outputFilePath = path.join(this.path, route.destinationPath, contentObj.slug as string);
+      const outputFilePath = this.path.join(this.currentPath, route.destinationPath, contentObj.slug as string);
       // create destination route item folder
       this.core.ensureDirExists(outputFilePath);
       // compile content object with template
@@ -145,7 +156,7 @@ export default class Engine {
         content = route.template.entry(contentObj);
       }
       // save file in the final path as index.html (for seamless routing)
-      fs.writeFileSync(path.join(outputFilePath, 'index.html'), content);
+      this.fs.writeFileSync(this.path.join(outputFilePath, 'index.html'), content);
     });
 
     // create searchable json file and blog note list pages with pagination
@@ -168,7 +179,7 @@ export default class Engine {
   }
 
   watch(watchArgs: WatchArgs) {
-    watch(watchArgs.foldersToWatch || [], {
+    this.nodeWatch(watchArgs.foldersToWatch || [], {
       recursive: true,
     }, () => {
       this.build(watchArgs);
@@ -179,24 +190,24 @@ export default class Engine {
 
   copyStaticFilesDir() {
     this.core.ensureDirExists(this.outputStaticPath);
-    fs.cpSync(this.assetsPath, this.outputStaticPath, { recursive: true });
+    this.fs.cpSync(this.assetsPath, this.outputStaticPath, { recursive: true });
   }
 
   copyContentAssetsDir() {
     this.core.ensureDirExists(this.outputAssetsPath);
-    fs.cpSync(this.contentStaticAssetsPath, this.outputAssetsPath, { recursive: true });
+    this.fs.cpSync(this.contentStaticAssetsPath, this.outputAssetsPath, { recursive: true });
   }
 
   copyRootFiles() {
-    const pathToRootFolderContents = path.join(this.contentPath, 'root');
+    const pathToRootFolderContents = this.path.join(this.contentPath, 'root');
     this.core.ensureDirExists(pathToRootFolderContents);
-    fs.cpSync(pathToRootFolderContents, this.outputPath, { recursive: true });
+    this.fs.cpSync(pathToRootFolderContents, this.outputPath, { recursive: true });
   }
 
   createSearchJsonfile(route: LemRoute, entriesArr: SearchEntryItem[]) {
-    const destinationPath = path.join(this.outputPath, route.destinationPath);
+    const destinationPath = this.path.join(this.outputPath, route.destinationPath);
     this.core.ensureDirExists(destinationPath);
-    fs.writeFileSync(path.join(destinationPath, 'search.json'), JSON.stringify({
+    this.fs.writeFileSync(this.path.join(destinationPath, 'search.json'), JSON.stringify({
       data: entriesArr
     }));
   }
@@ -209,7 +220,7 @@ export default class Engine {
         // let first page doesn't have to contain page number
         paginationLinks.push(i === 0 ? route.destinationPath : `${route.destinationPath}/page/${i + 1}/`);
         // we need to create page number folder with index.html inside it
-        this.core.ensureDirExists(path.join(this.outputPath, paginationLinks[i]));
+        this.core.ensureDirExists(this.path.join(this.outputPath, paginationLinks[i]));
       }
       // Create every pagination page (compile template etc.)
       paginationLinks.forEach((pageLink: string, pageIndex: number) => {
@@ -227,7 +238,7 @@ export default class Engine {
           content = route.template.list(contentObj);
         }
         // Save current page list file
-        fs.writeFileSync(path.join(pageLink, 'index.html'), content);
+        this.fs.writeFileSync(this.path.join(pageLink, 'index.html'), content);
       })
     } else {
       // Handle unpaginated list of entries
@@ -239,24 +250,24 @@ export default class Engine {
         content = route.template.list(contentObj);
       }
       // Save current page list file
-      fs.writeFileSync(path.join(route.destinationPath, 'index.html'), content);
+      this.fs.writeFileSync(this.path.join(route.destinationPath, 'index.html'), content);
     }
   }
 
   // Will uglify/minify basic js/css files and move it into output static path folder
   minifyAssets(urlArr: string[]) {
     urlArr.forEach((url) => {
-      const outputStaticPath = path.join(this.outputStaticPath, url);
-      if (fs.existsSync(outputStaticPath)) {
-        const txtContent = fs.readFileSync(outputStaticPath, 'utf8') || '';
+      const outputStaticPath = this.path.join(this.outputStaticPath, url);
+      if (this.fs.existsSync(outputStaticPath)) {
+        const txtContent = this.fs.readFileSync(outputStaticPath, 'utf8') || '';
         if (txtContent) {
           // handle js/css minification
           if (url.includes('.js')) {
-            const result = UglifyJS.minify(txtContent);
-            fs.writeFileSync(outputStaticPath, result?.code || txtContent);
+            const result = this.uglifyJs.minify(txtContent);
+            this.fs.writeFileSync(outputStaticPath, result?.code || txtContent);
           } else if (url.includes('.css')) {
-            const result = uglifycss.processString(txtContent);
-            fs.writeFileSync(outputStaticPath, result || txtContent);
+            const result = this.uglifyCss.processString(txtContent);
+            this.fs.writeFileSync(outputStaticPath, result || txtContent);
           }
         }
       }
