@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import watch from 'node-watch';
 import showdown, { Converter } from 'showdown';
-import UglifyJS from 'uglify-js';
+// import UglifyJS from 'uglify-js';
 import uglifycss from 'uglifycss';
 import LemCore from './core';
 import LemStore from './store';
@@ -252,8 +252,8 @@ export default class Engine {
         if (txtContent) {
           // handle js/css minification
           if (url.includes('.js')) {
-            const result = UglifyJS.minify(txtContent);
-            fs.writeFileSync(outputStaticPath, result?.code || txtContent);
+            // const result = UglifyJS.minify(txtContent);
+            // fs.writeFileSync(outputStaticPath, result?.code || txtContent);
           } else if (url.includes('.css')) {
             const result = uglifycss.processString(txtContent);
             fs.writeFileSync(outputStaticPath, result || txtContent);
