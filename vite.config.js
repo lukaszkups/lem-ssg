@@ -13,13 +13,17 @@ export default defineConfig({
   build: {
     target: 'esnext',
     sourcemap: true,
+    manifest: true,
     // lib: {
     //   entry: resolve(__dirname, 'lib/main.ts'),
     //   name: 'lem-ssg',
     //   fileName: 'lem-ssg',
     // }
     rollupOptions: {
-      input: 'lib/main.ts'
+      input: 'lib/main.ts',
+    //   output: {
+    //     dir: 'dist'
+    //   }
     }
   },
   resolve: {
