@@ -23,10 +23,8 @@ export default defineConfig({
       name: 'lem-ssg'
     },
     rollupOptions: {
-      external: ['uglifycss', 'fs', 'watch', 'showdown', 'path'],
       output: {
         globals: {
-          UglifyJS: 'uglify-js',
           uglifycss: 'uglifycss',
           fs: 'fs',
           watch: 'watch',
