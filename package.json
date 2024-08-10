@@ -7,7 +7,9 @@
   "module": "dist/lem-ssg.js",
   "types": "dist/lem-ssg.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "src",
+    "lib"
   ],
   "keywords": [
     "blog",
