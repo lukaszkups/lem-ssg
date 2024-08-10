@@ -28,8 +28,11 @@ export default defineConfig({
           watch: 'watch',
           showdown: 'showdown',
           path: 'path'
+        },
+        manualChunks: {
+          UglifyJS: 'UglifyJS',
         }
-      }
+      },
     }
   },
   resolve: {
