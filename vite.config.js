@@ -15,6 +15,9 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'lib/main.ts'),
       name: 'lem-ssg'
+    },
+    rollupOptions: {
+      external: ['UglifyJS']
     }
   },
   // build: {
