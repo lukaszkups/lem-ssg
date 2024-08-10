@@ -13,7 +13,8 @@ export default defineConfig({
     }),
   ],
   optimizeDeps: {
-    include: ['uglify-js', 'uglifycss', 'fs', 'watch', 'showdown', 'path']
+    include: ['uglifycss', 'fs', 'watch', 'showdown', 'path'],
+    exclude: ['uglify-js']
   },
   build: {
     target: 'esnext',
