@@ -1,12 +1,12 @@
 import { resolve } from "path";
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
-// import rollupNodePolyfills from 'rollup-plugin-polyfill-node';
+import builtins from 'rollup-plugin-node-builtins';
 import dts from "vite-plugin-dts";
 
 export default defineConfig({
   plugins: [
-    // rollupNodePolyfills(),
+    builtins(),
     nodePolyfills(),
     dts({
       insertTypesEntry: true,
@@ -19,25 +19,19 @@ export default defineConfig({
       name: 'lem-ssg'
     },
     rollupOptions: {
-      external: ['UglifyJS', 'uglifycss', 'fs', 'watch', 'showdown', 'path']
+      external: ['UglifyJS', 'uglifycss', 'fs', 'watch', 'showdown', 'path'],
+      output: {
+        globals: {
+          UglifyJS: 'UglifyJS',
+          uglifycss: 'uglifycss',
+          fs: 'fs',
+          watch: 'watch',
+          showdown: 'showdown',
+          path: 'path'
+        }
+      }
     }
   },
-  // build: {
-  //   target: 'esnext',
-  //   sourcemap: true,
-  //   manifest: true,
-  //   // lib: {
-  //   //   entry: resolve(__dirname, 'lib/main.ts'),
-  //   //   name: 'lem-ssg',
-  //   //   fileName: 'lem-ssg',
-  //   // }
-  //   rollupOptions: {
-  //     input: resolve(__dirname, 'lib/main.ts'),
-  //   //   output: {
-  //   //     dir: 'dist'
-  //   //   }
-  //   }
-  // },
   resolve: {
     alias: {
       src: resolve('src/'),
