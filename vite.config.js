@@ -22,7 +22,8 @@ export default defineConfig({
     alias: {
       src: resolve('src/'),
       buffer: 'rollup-plugin-node-polyfills/polyfills/buffer-es6',
-      fs: 'rollup-plugin-node-polyfills/polyfills/empty'
+      fs: 'rollup-plugin-node-polyfills/polyfills/empty',
+      util: resolve('util/')
     }
   }
 });
