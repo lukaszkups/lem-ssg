@@ -11,18 +11,22 @@ export default defineConfig({
     }),
   ],
   build: {
+    target: 'esnext',
     sourcemap: true,
     // lib: {
     //   entry: resolve(__dirname, 'lib/main.ts'),
     //   name: 'lem-ssg',
     //   fileName: 'lem-ssg',
     // }
+    rollupOptions: {
+      input: 'lib/main.ts'
+    }
   },
-  // resolve: {
-  //   alias: {
-  //     src: resolve('src/'),
-  //     buffer: 'rollup-plugin-node-polyfills/polyfills/buffer-es6',
-  //     fs: 'rollup-plugin-node-polyfills/polyfills/empty',
-  //   }
-  // }
+  resolve: {
+    alias: {
+      src: resolve('src/'),
+      buffer: 'rollup-plugin-node-polyfills/polyfills/buffer-es6',
+      fs: 'rollup-plugin-node-polyfills/polyfills/empty',
+    }
+  }
 });
