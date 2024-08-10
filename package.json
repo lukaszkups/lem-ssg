@@ -4,12 +4,17 @@
   "type": "module",
   "license": "MIT",
   "description": "A DIY static site generator utility ",
-  "module": "dist/lem-ssg.js",
-  "types": "dist/lem-ssg.d.ts",
+  "main": "./dist/lem-ssg.umd.cjs",
+  "module": "./dist/lem-ssg.js",
+  "types": "./dist/lem-ssg.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/lem-ssg.js",
+      "require": "./dist/lem-ssg.umd.cjs"
+    }
+  },
   "files": [
-    "dist",
-    "src",
-    "lib"
+    "dist"
   ],
   "keywords": [
     "blog",

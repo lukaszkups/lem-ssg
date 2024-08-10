@@ -12,20 +12,27 @@ export default defineConfig({
   ],
   build: {
     target: 'esnext',
-    sourcemap: true,
-    manifest: true,
-    // lib: {
-    //   entry: resolve(__dirname, 'lib/main.ts'),
-    //   name: 'lem-ssg',
-    //   fileName: 'lem-ssg',
-    // }
-    rollupOptions: {
-      input: 'lib/main.ts',
-    //   output: {
-    //     dir: 'dist'
-    //   }
+    lib: {
+      entry: resolve(__dirname, 'lib/main.ts'),
+      name: 'lem-ssg'
     }
   },
+  // build: {
+  //   target: 'esnext',
+  //   sourcemap: true,
+  //   manifest: true,
+  //   // lib: {
+  //   //   entry: resolve(__dirname, 'lib/main.ts'),
+  //   //   name: 'lem-ssg',
+  //   //   fileName: 'lem-ssg',
+  //   // }
+  //   rollupOptions: {
+  //     input: resolve(__dirname, 'lib/main.ts'),
+  //   //   output: {
+  //   //     dir: 'dist'
+  //   //   }
+  //   }
+  // },
   resolve: {
     alias: {
       src: resolve('src/'),
