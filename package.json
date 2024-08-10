@@ -1,6 +1,6 @@
 {
   "name": "lem-ssg",
-  "version": "0.0.5-41",
+  "version": "0.0.5-42",
   "type": "module",
   "license": "MIT",
   "description": "A DIY static site generator utility ",
