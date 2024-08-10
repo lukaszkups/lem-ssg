@@ -23,7 +23,7 @@ export default defineConfig({
       src: resolve('src/'),
       buffer: 'rollup-plugin-node-polyfills/polyfills/buffer-es6',
       fs: 'rollup-plugin-node-polyfills/polyfills/empty',
-      util: resolve('util/')
+      util: 'rollup-plugin-node-polyfills/polyfills/empty',
     }
   }
 });
