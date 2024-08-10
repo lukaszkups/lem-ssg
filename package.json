@@ -9,7 +9,7 @@
   "types": "./dist/lem-ssg.d.ts",
   "exports": {
     ".": {
-      "default": "./dist/lem-ssg.umd.cjs",
+      "main": "./dist/lem-ssg.umd.cjs",
       "require": "./dist/lem-ssg.umd.cjs"
     }
   },
