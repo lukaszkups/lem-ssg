@@ -1,16 +1,16 @@
 {
   "name": "lem-ssg",
-  "version": "0.0.5-37",
+  "version": "0.0.5-36",
   "type": "module",
   "license": "MIT",
   "description": "A DIY static site generator utility ",
   "main": "./main.js",
-  "module": "./main.js",
+  "module": "./dist/lem-ssg.js",
   "types": "./dist/lem-ssg.d.ts",
   "exports": {
     ".": {
-      "require": "./main.js",
-      "default": "./main.js"
+      "require": "./dist/lem-ssg.umd.cjs",
+      "default": "./dist/lem-ssg.umd.cjs"
     }
   },
   "files": [
