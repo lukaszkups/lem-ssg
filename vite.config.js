@@ -1,10 +1,12 @@
 import { resolve } from "path";
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+// import rollupNodePolyfills from 'rollup-plugin-polyfill-node';
 import dts from "vite-plugin-dts";
 
 export default defineConfig({
   plugins: [
+    // rollupNodePolyfills(),
     nodePolyfills(),
     dts({
       insertTypesEntry: true,
@@ -17,7 +19,7 @@ export default defineConfig({
       name: 'lem-ssg'
     },
     rollupOptions: {
-      external: ['UglifyJS']
+      external: ['UglifyJS', 'uglifycss', 'fs', 'watch', 'showdown', 'path']
     }
   },
   // build: {
