@@ -12,6 +12,9 @@ export default defineConfig({
       insertTypesEntry: true,
     }),
   ],
+  optimizeDeps: {
+    include: ['uglify-js', 'uglifycss', 'fs', 'watch', 'showdown', 'path']
+  },
   build: {
     target: 'esnext',
     lib: {
@@ -19,19 +22,16 @@ export default defineConfig({
       name: 'lem-ssg'
     },
     rollupOptions: {
-      external: ['UglifyJS', 'uglifycss', 'fs', 'watch', 'showdown', 'path'],
+      external: ['uglifycss', 'fs', 'watch', 'showdown', 'path'],
       output: {
         globals: {
-          UglifyJS: 'UglifyJS',
+          UglifyJS: 'uglify-js',
           uglifycss: 'uglifycss',
           fs: 'fs',
           watch: 'watch',
           showdown: 'showdown',
           path: 'path'
         },
-        manualChunks: {
-          UglifyJS: 'UglifyJS',
-        }
       },
     }
   },
