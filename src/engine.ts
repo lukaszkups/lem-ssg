@@ -74,7 +74,7 @@ export default class Engine {
     this.core.ensureDirExists(outputFilePath);
     // if source prop is passed (to direct .md file) then fetch its contents
     if (route.sourcePath) {
-      const txtContent = fs.readFileSync(path.join(this.path, route.sourcePath), 'utf8');
+      const txtContent = fs.readFileSync(path.join(this.path, this.contentPath, route.sourcePath), 'utf8');
       // extract metadata from the current file
       const htmlContent = this.markdown.makeHtml(txtContent);
       // extract metadata from the current file
@@ -98,7 +98,7 @@ export default class Engine {
   }
 
   compileBlogRoute(route: LemRoute) {
-    const routePath = path.join(this.path, route.sourcePath)
+    const routePath = path.join(this.path, this.contentPath, route.sourcePath)
     // collect markdown files within directory
     const sourceFilePaths = this.core.getAllFilesWithinDirectory(routePath);
     // create destination list (root) directory (will contain folders 1 per list item with index.html file inside)
